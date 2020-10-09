@@ -2,6 +2,7 @@
 
 import argparse
 import os
+from shutil import which
 
 # Author: n0nuser
 # Description: Downloads Stream Video with ".m3u8" file and transcodes it to mp4
@@ -23,6 +24,11 @@ def args():
         exit()
     return out,inp
 
-filename,streamlink = args()
 
-os.system("vlc -I dummy --sout '#transcode{vcodec=\"avc1\",acodec=\"mp4a\"}:standard{mux=\"mp4\",dst=\"" + filename + "\",access=file}'" + streamlink)
+if(which("vlc") is None):
+    print("You need to install VLC: sudo apt install vlc -y")
+    exit()
+filename,streamlink = args()
+filename = filename + ".mp4"
+command = "vlc -I dummy --sout '#transcode{vcodec=\"avc1\",acodec=\"mp4a\"}:standard{mux=\"mp4\",dst=\"" + filename + "\",access=file}' " + streamlink
+os.system(command)
