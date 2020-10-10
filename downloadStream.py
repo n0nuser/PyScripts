@@ -30,5 +30,5 @@ if(which("vlc") is None):
     exit()
 filename,streamlink = args()
 filename = filename + ".mp4"
-command = "vlc -I dummy --sout '#transcode{vcodec=\"avc1\",acodec=\"mp4a\"}:standard{mux=\"mp4\",dst=\"" + filename + "\",access=file}' " + streamlink
+command = "vlc -I dummy --sout '#transcode{vcodec=h264,acodec=mpga,ab=128,channels=2,samplerate=44100,scodec=none}:standard{mux=\"mp4\",dst=\"" + filename + "\",access=file}' " + streamlink
 os.system(command)
