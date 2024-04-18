@@ -1,31 +1,83 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+"""
+This script converts WEBM video files to MP4 video files using ffmpeg.
+"""
+
+# Author: n0nuser - Pablo Jesús González Rubio
+# Description: Convert WEBM video files to MP4 video files.
+# Requirements: ffmpeg (sudo apt install ffmpeg -y)
+
 import argparse
-import os
 import subprocess
-
-def args():
-    desc = "Convert webm to mp4."
-    parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument("-i", help="Name of Input File", type=str, dest="input")
-    parser.add_argument("-o", help="Name of Output File", type=str, dest="output")
-    inp = str(parser.parse_args().input)
-    out = str(parser.parse_args().output)
-    if inp is None or out is None:
-        print("usage: webm2mp4.py [-h] [-i INPUT] [-o OUTPUT]")
-        exit()
-    if not out.endswith(".mp4",4):
-        print("Output file is not .mp4!!")
-        exit()
-    return inp,out
+import sys
+from typing import Tuple
 
 
-inp, out = args()
+def parse_arguments() -> Tuple[str, str]:
+    """
+    Parses command line arguments for the script.
 
-# Verifies ffmpeg is installed
-status, result = subprocess.getstatusoutput("which ffmpeg")
-if status == 1:
-    print("ffmpeg needed!\nTo install it: sudo apt install ffmpeg -y")
+    Returns:
+        Tuple containing input and output file names.
 
-cmd_string = 'ffmpeg -i "' + inp + '" "' + out + '"'
-print('converting ' + inp + ' to ' + out)
-os.system(cmd_string)
+    Raises:
+        SystemExit: If the required arguments are not provided or if the output file extension is not .mp4.
+    """
+    parser = argparse.ArgumentParser(description="Convert WEBM to MP4.")
+    parser.add_argument("-i", "--input", help="Name of Input File", required=True, type=str)
+    parser.add_argument("-o", "--output", help="Name of Output File", required=True, type=str)
+
+    args = parser.parse_args()
+
+    if not args.output.endswith(".mp4"):
+        parser.error("Output file must have a .mp4 extension")
+
+    return args.input, args.output
+
+
+def check_ffmpeg_installed() -> None:
+    """
+    Checks if ffmpeg is installed on the system.
+
+    Raises:
+        RuntimeError: If ffmpeg is not found.
+    """
+    try:
+        subprocess.run(["which", "ffmpeg"], check=True, stdout=subprocess.DEVNULL)
+    except subprocess.CalledProcessError:
+        raise RuntimeError(
+            "ffmpeg is required but not installed. To install it: sudo apt install ffmpeg -y"
+        )
+
+
+def convert_webm_to_mp4(input_file: str, output_file: str) -> None:
+    """
+    Converts a WEBM video file to MP4 format using ffmpeg.
+
+    Args:
+        input_file: The path to the input WEBM file.
+        output_file: The path to the output MP4 file.
+    """
+    try:
+        print(f"Converting {input_file} to {output_file}")
+        subprocess.run(["ffmpeg", "-i", input_file, output_file], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to convert {input_file} to {output_file}: {e}")
+        sys.exit(1)
+
+
+def main() -> None:
+    """
+    Main function to parse arguments, check dependencies, and convert video file format.
+    """
+    input_file, output_file = parse_arguments()
+    try:
+        check_ffmpeg_installed()
+        convert_webm_to_mp4(input_file, output_file)
+    except RuntimeError as e:
+        print(e)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
